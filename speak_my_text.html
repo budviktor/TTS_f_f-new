@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Speak My Text (Choose Language & Voice)</title>
+</head>
+<body>
+  <h1>Speak My Text</h1>
+
+  <textarea id="text" rows="10" cols="30" placeholder="Type your text here..."></textarea><br><br>
+
+  <label for="language">Choose Language:</label>
+  <select id="language" onchange="populateVoices()"></select><br><br>
+
+  <label for="voice">Choose Voice:</label>
+  <select id="voice"></select><br><br>
+
+  <button onclick="speak()">Speak</button>
+
+  <script>
+    let voices = [];
+
+    function populateLanguages() {
+      const languageSelect = document.getElementById('language');
+      const langs = [...new Set(voices.map(voice => voice.lang))];
+      languageSelect.innerHTML = langs.map(lang => `<option value="${lang}">${lang}</option>`).join('');
+    }
+
+    function populateVoices() {
+      const voiceSelect = document.getElementById('voice');
+      const selectedLang = document.getElementById('language').value;
+      const filteredVoices = voices.filter(voice => voice.lang === selectedLang);
+
+      voiceSelect.innerHTML = filteredVoices.map((voice, index) => 
+        `<option value="${index}">${voice.name} (${voice.lang})</option>`
+      ).join('');
+    }
+
+    function speak() {
+      const text = document.getElementById('text').value;
+      const utterance = new SpeechSynthesisUtterance(text);
+      const selectedVoiceIndex = document.getElementById('voice').value;
+
+      if (voices[selectedVoiceIndex]) {
+        utterance.voice = voices[selectedVoiceIndex];
+      }
+
+      speechSynthesis.speak(utterance);
+    }
+
+    function loadVoices() {
+      voices = speechSynthesis.getVoices();
+      populateLanguages();
+      populateVoices();
+    }
+
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+  </script>
+</body>
+</html>
