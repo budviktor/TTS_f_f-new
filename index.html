@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text-to-Speech Demo</title>
+</head>
+<body>
+    <h1>Text-to-Speech Demo</h1>
+    <textarea id="text" rows="4" cols="50" placeholder="Enter text here..."></textarea><br><br>
+    <label for="language">Select Language:</label>
+    <select id="language">
+        <!-- Options will be populated by JavaScript -->
+    </select><br><br>
+    <label for="voice">Select Voice:</label>
+    <select id="voice">
+        <!-- Options will be populated by JavaScript -->
+    </select><br><br>
+    <button onclick="speak()">Speak</button>
+
+    <script>
+        const synth = window.speechSynthesis;
+        const textInput = document.getElementById('text');
+        const languageSelect = document.getElementById('language');
+        const voiceSelect = document.getElementById('voice');
+
+        function populateVoiceList() {
+            const voices = synth.getVoices();
+            const languageOptions = new Set();
+
+            voices.forEach(voice => {
+                languageOptions.add(voice.lang);
+            });
+
+            languageOptions.forEach(lang => {
+                const option = document.createElement('option');
+                option.value = lang;
+                option.textContent = lang;
+                languageSelect.appendChild(option);
+            });
+
+            languageSelect.onchange = populateVoiceOptions;
+            populateVoiceOptions();
+        }
+
+        function populateVoiceOptions() {
+            const selectedLanguage = languageSelect.value;
+            const voices = synth.getVoices().filter(voice => voice.lang === selectedLanguage);
+
+            voiceSelect.innerHTML = '';
+            voices.forEach(voice => {
+                const option = document.createElement('option');
+                option.value = voice.name;
+                option.textContent = voice.name;
+                voiceSelect.appendChild(option);
+            });
+        }
+
+        function speak() {
+            if (synth.speaking) {
+                console.error('SpeechSynthesisUtterance is already speaking.');
+                return;
+            }
+
+            if (textInput.value !== '') {
+                const utterThis = new SpeechSynthesisUtterance(textInput.value);
+                const selectedVoice = synth.getVoices().find(voice => voice.name === voiceSelect.value);
+                utterThis.voice = selectedVoice;
+                synth.speak(utterThis);
+            }
+        }
+
+        populateVoiceList();
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = populateVoiceList;
+        }
+    </script>
+</body>
+</html>
